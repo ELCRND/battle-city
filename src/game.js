@@ -7,7 +7,7 @@ export default class Game {
     this.player1 = null;
     this.player2 = null;
     this.stages = stages;
-    this.stage = 0;
+    this.stage = null;
     this.stageIndex = 0;
     this.frames = 0;
     this.lastFrame = 0;
@@ -15,7 +15,6 @@ export default class Game {
 
   async init() {
     this.view.init();
-    // this.world.setStage(this.stages[this.stage]);
   }
 
   start() {

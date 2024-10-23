@@ -1,15 +1,19 @@
 import {
   STAGE_SIZE,
   TILE_SIZE,
-  ENEMY_TANK_QUANT,
-  ENEMY_TANK_SPAWN_THRESHOLD,
   OBJECTS_TYPE,
+  PLAYER1_EXTRA_LIVES,
+  ENEMY_TANK_QUANT,
+  ENEMY_TANK_SPAWN_TIMEOUT,
+  ENEMY_TANK_SPAWN_MARK_TIMEOUT,
 } from "./constants.js";
+
 import Base from "./base.js";
-import PlayerTank from "./player-tank.js";
-import EnemyTank from "./enemyTanks.js";
 import BrickWall from "./brick-wall.js";
 import SteelWall from "./stell-wall.js";
+import PlayerTank from "./player-tank.js";
+import EnemyTank from "./enemyTanks.js";
+import SpawnMarker from "./spawn-marker.js";
 
 export default class Stage {
   static TerrainType = {
@@ -61,14 +65,10 @@ export default class Stage {
     this.enemies = Stage.createEnemies(data.enemies);
     this.terrains = Stage.createTerrain(data.map);
     this.base = new Base();
-    this.player = new PlayerTank();
-    this.objects = new Set([
-      this.base,
-      this.player,
-      this.enemies.shift(),
-      ...this.terrains,
-    ]);
-    this.enemyTankCount = 1;
+    this.player = new PlayerTank({ extraLives: PLAYER1_EXTRA_LIVES });
+    this.objects = new Set([this.base, this.player, ...this.terrains]);
+    this.spawnMark = null;
+    this.enemyTankCount = 0;
     this.spawnEnemyTankTimer = 0;
   }
 
@@ -89,6 +89,30 @@ export default class Stage {
   }
   get left() {
     return 0;
+  }
+  get haveEnemies() {
+    return this.enemies.length > 0;
+  }
+
+  update(input, frameDelta) {
+    const state = {
+      input,
+      frameDelta,
+      world: this,
+    };
+
+    if (this.haveEnemies) {
+      this._handlerAddEnemyTank(frameDelta);
+    }
+
+    this.objects.forEach((object) => {
+      if (object.isDestroyed) {
+        this._deleteObjects(object);
+      }
+      if (typeof object === "object") {
+        object.update(state);
+      }
+    });
   }
 
   isOutOfBounds(object) {
@@ -120,11 +144,14 @@ export default class Stage {
     for (const other of this.objects) {
       if (
         other.type === OBJECTS_TYPE.BULLET_EXPLOSION ||
-        other.type === OBJECTS_TYPE.TANK_EXPLOSION
+        other.type === OBJECTS_TYPE.TANK_EXPLOSION ||
+        other.type === OBJECTS_TYPE.POINTS ||
+        other.type === OBJECTS_TYPE.PLAYER_SHIELD ||
+        other.type === OBJECTS_TYPE.SPAWN_MARKER
       )
         continue;
       if (other !== object && this.haveCollision(object, other)) {
-        other.debug = true;
+        // other.debug = true;
         objects.add(other);
       }
     }
@@ -142,25 +169,6 @@ export default class Stage {
     );
   }
 
-  update(input, frameDelta) {
-    const state = {
-      input,
-      frameDelta,
-      world: this,
-    };
-
-    if (this._shouldAddEnemyTank(frameDelta)) {
-      this._addEnemyTank();
-    }
-
-    this.objects.forEach((object) => {
-      if (object.isDestroyed) {
-        this._deleteObjects(object);
-      }
-      typeof object === "object" && object.update(state);
-    });
-  }
-
   _deleteObjects(object) {
     switch (object.type) {
       case OBJECTS_TYPE.BASE:
@@ -170,28 +178,58 @@ export default class Stage {
       case OBJECTS_TYPE.BRICK_WALL:
       case OBJECTS_TYPE.BULLET:
         this.objects.delete(object);
+      case OBJECTS_TYPE.PLAYER1:
+        if (object.extraLives >= 0) {
+          const newLife = new PlayerTank({ extraLives: object.extraLives });
+          this.objects.delete(object);
+          this.player = newLife;
+          this.objects.add(this.player);
+        } else {
+          this.objects.delete(object);
+        }
     }
   }
 
-  _shouldAddEnemyTank(frameDelta) {
+  _handlerAddEnemyTank(frameDelta) {
     if (this.enemyTankCount < ENEMY_TANK_QUANT) {
       this.spawnEnemyTankTimer += frameDelta;
     }
-    if (this.spawnEnemyTankTimer > ENEMY_TANK_SPAWN_THRESHOLD) {
-      this.spawnEnemyTankTimer = 0;
-      return true;
-    }
 
-    return false;
+    if (
+      !this.spawnMark &&
+      this.spawnEnemyTankTimer > ENEMY_TANK_SPAWN_MARK_TIMEOUT
+    ) {
+      this._addSpawnMark();
+    } else if (this.spawnEnemyTankTimer > ENEMY_TANK_SPAWN_TIMEOUT) {
+      this.objects.delete(this.spawnMark);
+      this.spawnMark = null;
+      this.spawnEnemyTankTimer = 0;
+      this._addEnemyTank();
+    }
+  }
+
+  _addSpawnMark() {
+    const { x, y, width, height } = this.enemies[0];
+    this.spawnMark = new SpawnMarker({ x, y, width, height });
+    this.objects.add(this.spawnMark);
   }
 
   _addEnemyTank() {
-    if (this.enemies.length > 0) {
-      const tank = this.enemies[0];
-      if (!this.hasCollision(tank)) {
-        this.objects.add(this.enemies.shift());
-        this.enemyTankCount += 1;
+    const collision = this.getCollision(this.enemies[0]);
+    let isFreePlace = true;
+
+    collision?.objects.forEach((object) => {
+      if (
+        object.type === OBJECTS_TYPE.PLAYER1 ||
+        object.type === OBJECTS_TYPE.ENEMY_TANK
+      ) {
+        isFreePlace = false;
       }
+    });
+
+    if (isFreePlace) {
+      this.objects.add(this.enemies.shift());
+      this.enemyTankCount += 1;
     }
   }
 }

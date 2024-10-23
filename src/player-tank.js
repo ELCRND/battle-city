@@ -11,19 +11,32 @@ import {
   getValueForDirection,
 } from "./utils.js";
 import Tank from "./tank.js";
+import PlayerShield from "./player-shield.js";
 
 export default class PlayerTank extends Tank {
-  constructor(args) {
+  constructor({ extraLives, ...args }) {
     super(args);
 
     this.type = OBJECTS_TYPE.PLAYER1;
     this.x = PLAYER1_START_POSITION_X;
     this.y = PLAYER1_START_POSITION_Y;
     this.sprites = PLAYER1_SPRITES;
+    this.extraLives = extraLives;
     this.direction = Tank.Direction.UP;
+    this.shield = new PlayerShield(this);
+    this.timeShieldActive = 0;
   }
 
   update({ input, frameDelta, world }) {
+    if (this.isDestroyed) {
+      world.objects.add(this.сreateExplosion(this.type));
+      return;
+    }
+
+    if (this.shield && !world.objects.has(this.shield)) {
+      world.objects.add(this.shield);
+    }
+
     if (input.has(Keys.SPACE)) {
       this.fire();
       input.keys.delete(Keys.SPACE);
@@ -48,5 +61,12 @@ export default class PlayerTank extends Tank {
         this.move(axis, -value);
       }
     }
+  }
+
+  hit() {
+    // if (this.extraLives >= 0 && !this.shield) {
+    //   this.isDestroyed = true;
+    //   this.extraLives -= 1;
+    // }
   }
 }

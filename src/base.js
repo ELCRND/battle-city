@@ -19,8 +19,8 @@ export default class Base extends GameObject {
     this.width = BASE_WIDTH;
     this.height = BASE_HEIGHT;
     this.sprites = BASE_SPTITES;
-    this.isDestroyed = false;
     this.gameOver = false;
+    this.isExploded = false;
   }
 
   get sprite() {
@@ -28,14 +28,14 @@ export default class Base extends GameObject {
   }
 
   update({ world }) {
-    if (this.isDestroyed && !this.gameOver) {
+    if (this.isExploded && !this.gameOver) {
       world.objects.add(this.сreateExplosion());
       this.gameOver = true;
     }
   }
 
   hit() {
-    this.isDestroyed = true;
+    this.isExploded = true;
   }
 
   сreateExplosion() {

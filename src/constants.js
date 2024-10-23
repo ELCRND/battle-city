@@ -16,6 +16,9 @@ export const OBJECTS_TYPE = {
   TANK_EXPLOSION: "tank-explosion",
   BRICK_WALL: "brick-wall",
   STEEL_WALL: "steel-wall",
+  POINTS: "points",
+  PLAYER_SHIELD: "player-shield",
+  SPAWN_MARKER: "spawn-marker",
 };
 
 /*__________________________SIZES__________________________*/
@@ -67,6 +70,7 @@ export const BULLET_SPRITES = [
 
 /*__________________________PLAYER__________________________*/
 
+export const PLAYER1_EXTRA_LIVES = 2;
 export const PLAYER1_START_POSITION_X = 4 * CELL_SIZE;
 export const PLAYER1_START_POSITION_Y = 12 * CELL_SIZE;
 export const PLAYER1_SPRITES = [
@@ -78,6 +82,11 @@ export const PLAYER1_SPRITES = [
   [5 * CELL_SIZE, TANK_TYPE * CELL_SIZE, CELL_SIZE, CELL_SIZE], // down move
   [2 * CELL_SIZE, TANK_TYPE * CELL_SIZE, CELL_SIZE, CELL_SIZE], // left
   [3 * CELL_SIZE, TANK_TYPE * CELL_SIZE, CELL_SIZE, CELL_SIZE], // left move
+];
+
+export const PLAYER_SHIELD_SPRITES = [
+  [16 * CELL_SIZE, 9 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [17 * CELL_SIZE, 9 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
 ];
 
 /*__________________________WALLS__________________________*/
@@ -116,21 +125,26 @@ export const BULLET_EXPLOSION_SPRITES = [
 
 export const TANK_EXPLOSION_WIDTH = CELL_SIZE;
 export const TANK_EXPLOSION_HEIGHT = CELL_SIZE;
-export const TANK_EXPLOSION_ANIMATION_SPEED = 50; // ms
-export const TANK_EXPLOSION_DESTROY_DELAY = 50; // ms
+export const TANK_EXPLOSION_ANIMATION_SPEED = 70; // ms
+export const TANK_EXPLOSION_DESTROY_DELAY = 70; // ms
 export const TANK_EXPLOSION_SPRITES = [
   [16 * CELL_SIZE, 8 * CELL_SIZE, CELL_SIZE, CELL_SIZE], // explosion
   [17 * CELL_SIZE, 8 * CELL_SIZE, CELL_SIZE, CELL_SIZE], // explosion 2
   [18 * CELL_SIZE, 8 * CELL_SIZE, CELL_SIZE, CELL_SIZE], // explosion 3
   [19 * CELL_SIZE, 8 * CELL_SIZE, CELL_SIZE * 2, CELL_SIZE * 2], // explosion 4
   [21 * CELL_SIZE, 8 * CELL_SIZE, CELL_SIZE * 2, CELL_SIZE * 2], // explosion 5
+  [18 * CELL_SIZE, 8 * CELL_SIZE, CELL_SIZE, CELL_SIZE], // explosion 3
 ];
 
 /*__________________________ENEMY__________________________*/
 export const ENEMY_TANK_QUANT = 4;
 export const ENEMY_TANK_SPEED = 2;
 export const ENEMY_TANK_TURN_TIMER_THRESHOLD = 200; // ms
-export const ENEMY_TANK_SPAWN_THRESHOLD = 5000; // ms
+export const ENEMY_TANK_SPAWN_TIMEOUT = 5000; // ms
+export const ENEMY_TANK_RANDOM_TURN = 32; // 1 to 31
+export const ENEMY_TANK_RANDOM_FIRE = 100; // 1 to 99
+export const PLAYER_HUNTING_TIME = 20000;
+export const BASE_HUNTING_TIME = 40000;
 export const ENEMY_TANK_START_POSITIONS = [
   [6 * CELL_SIZE, 0],
   [12 * CELL_SIZE, 0],
@@ -148,4 +162,56 @@ export const ENEMY_TANK_SPRITES = [
   [11 * CELL_SIZE, ENEMY_TANK_TYPE * CELL_SIZE, CELL_SIZE, CELL_SIZE], // left move
 ];
 
-/*=========================================================*/
+export const ENEMY_TANK_SPAWN_SPRITES = [
+  [19 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [18 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [17 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [16 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [17 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [18 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [19 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [18 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [17 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [16 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [17 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [18 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+  [19 * CELL_SIZE, 6 * CELL_SIZE, CELL_SIZE, CELL_SIZE],
+];
+export const ENEMY_TANK_SPAWN_ANIMATION_SPEED = 80;
+export const ENEMY_TANK_SPAWN_MARK_TIMEOUT =
+  ENEMY_TANK_SPAWN_TIMEOUT -
+  ENEMY_TANK_SPAWN_SPRITES.length * ENEMY_TANK_SPAWN_ANIMATION_SPEED;
+
+/* __________________________PANEL__________________________ */
+export const PANEL_ICONS_POSITION = [926, 96];
+export const PANEL_ICONS_SPRITES = [CELL_SIZE * 18, CELL_SIZE * 11.5];
+
+export const PANEL_STAGE_INFO_SPRITES = [
+  [CELL_SIZE * 24, 0],
+  [CELL_SIZE * 19, CELL_SIZE * 11],
+];
+export const PANEL_STAGE_INFO_POSITION = [
+  [926, 700],
+  [960, 770],
+];
+
+export const PANEL_EXTRA_LIVES_SPRITES = [
+  [CELL_SIZE * 22, 0],
+  [CELL_SIZE * 18.5, CELL_SIZE * 11],
+];
+export const PANEL_EXTRA_LIVES_POSITION = [
+  [926, 548],
+  [962, 580],
+];
+
+/* __________________________SCORE__________________________ */
+export const POINTS_WIDTH = CELL_SIZE;
+export const POINTS_HEIGHT = TILE_SIZE;
+export const POINTS_DESTROY_DELAY = 50;
+export const POINTS_SPRITES = [
+  [16 * CELL_SIZE, 10 * CELL_SIZE, CELL_SIZE, TILE_SIZE], // 100
+  [17 * CELL_SIZE, 10 * CELL_SIZE, CELL_SIZE, TILE_SIZE], // 200
+  [18 * CELL_SIZE, 10 * CELL_SIZE, CELL_SIZE, TILE_SIZE], // 300
+  [19 * CELL_SIZE, 10 * CELL_SIZE, CELL_SIZE, TILE_SIZE], // 400
+  [20 * CELL_SIZE, 10 * CELL_SIZE, CELL_SIZE, TILE_SIZE], // 500
+];

@@ -88,26 +88,27 @@ export default class Bullet extends GameObject {
   }
 
   _getExplosionStartingPosition() {
+    const trashold = (CELL_SIZE - BULLET_WIDTH) / 2 + 1;
     switch (this.direction) {
       case Bullet.Direction.UP:
         return {
-          x: this.left - (CELL_SIZE - BULLET_WIDTH) / 2 + 1,
+          x: this.left - trashold,
           y: this.top - TILE_SIZE / 2,
         };
       case Bullet.Direction.RIGHT:
         return {
           x: this.left - TILE_SIZE,
-          y: this.top - (CELL_SIZE - BULLET_WIDTH) / 2 + 1,
+          y: this.top - trashold,
         };
       case Bullet.Direction.DOWN:
         return {
-          x: this.left - (CELL_SIZE - BULLET_WIDTH) / 2 + 1,
+          x: this.left - trashold,
           y: this.top - TILE_SIZE,
         };
       case Bullet.Direction.LEFT:
         return {
           x: this.left - TILE_SIZE / 2,
-          y: this.top - (CELL_SIZE - BULLET_WIDTH) / 2 + 1,
+          y: this.top - trashold,
         };
     }
   }

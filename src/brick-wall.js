@@ -6,10 +6,10 @@ export default class BrickWall extends Wall {
     super(args);
 
     this.type = OBJECTS_TYPE.BRICK_WALL;
-    this.spriteIndex = 0;
-    this.isDestroyed = false;
     this.sprites = BRICK_WALL_SPRITES;
+    this.spriteIndex = 0;
     this.stability = `1111`; // full wall, top-left | top-right | bottom-left | bottom-right
+    this.isDestroyed = false;
   }
 
   get sprite() {
@@ -25,6 +25,7 @@ export default class BrickWall extends Wall {
       this.isDestroyed = true;
       return;
     }
+
     if (direction === DIRECTION.UP) {
       if (this.isUndamaged) {
         this.spriteIndex = 4;
@@ -33,7 +34,7 @@ export default class BrickWall extends Wall {
         this.isDestroyed = true;
       } else if (this.stability === "0101") {
         this.spriteIndex = 8;
-        this.stability = "1100";
+        this.stability = "0100";
       } else if (this.stability === "1010") {
         this.spriteIndex = 6;
         this.stability = "1000";
@@ -48,10 +49,10 @@ export default class BrickWall extends Wall {
         this.isDestroyed = true;
       } else if (this.stability === "0011") {
         this.spriteIndex = 7;
-        this.stability = "0101";
+        this.stability = "0001";
       } else if (this.stability === "1100") {
         this.spriteIndex = 8;
-        this.stability = "0101";
+        this.stability = "0100";
       }
     }
     if (direction === DIRECTION.DOWN) {
@@ -62,10 +63,10 @@ export default class BrickWall extends Wall {
         this.isDestroyed = true;
       } else if (this.stability === "0101") {
         this.spriteIndex = 7;
-        this.stability = "1100";
+        this.stability = "0001";
       } else if (this.stability === "1010") {
         this.spriteIndex = 5;
-        this.stability = "1100";
+        this.stability = "0010";
       }
     }
     if (direction === DIRECTION.LEFT) {
@@ -76,10 +77,10 @@ export default class BrickWall extends Wall {
         this.isDestroyed = true;
       } else if (this.stability === "0011") {
         this.spriteIndex = 5;
-        this.stability = "0101";
+        this.stability = "0010";
       } else if (this.stability === "1100") {
         this.spriteIndex = 6;
-        this.stability = "0101";
+        this.stability = "1000";
       }
     }
   }

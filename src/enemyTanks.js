@@ -1,11 +1,17 @@
 import {
   OBJECTS_TYPE,
-  ENEMY_TANK_SPEED,
-  ENEMY_TANK_SPRITES,
+  CELL_SIZE,
   ENEMY_TANK_START_POSITIONS,
   ENEMY_TANK_TURN_TIMER_THRESHOLD,
+  ENEMY_TANK_SPEED,
+  ENEMY_TANK_SPRITES,
+  ENEMY_TANK_RANDOM_FIRE,
+  ENEMY_TANK_RANDOM_TURN,
+  PLAYER_HUNTING_TIME,
+  BASE_HUNTING_TIME,
 } from "./constants.js";
 import { getAxisforDirection, getValueForDirection } from "./utils.js";
+
 import Tank from "./tank.js";
 
 export default class EnemyTank extends Tank {
@@ -19,27 +25,52 @@ export default class EnemyTank extends Tank {
     this.x = ENEMY_TANK_START_POSITIONS[indexStartPosition][0];
     this.y = ENEMY_TANK_START_POSITIONS[indexStartPosition][1];
     this.turnTimer = 0;
+    this.huntingTime = 0;
   }
 
   update({ frameDelta, world }) {
     if (this.isDestroyed) {
-      world.objects.add(this.сreateExplosion());
+      world.objects.add(this.сreateExplosion(this.type));
       return;
     }
+
+    this.huntingTime += frameDelta;
 
     const axis = getAxisforDirection(this.direction);
     const value = getValueForDirection(this.direction);
 
     this.move(axis, value);
     this.animate(frameDelta);
-    // this._randomFire(world);
+    this._randomFire(world);
 
     const isOutOfBounds = world.isOutOfBounds(this);
-    const hasCollision = world.hasCollision(this);
+    const collision = world.getCollision(this);
 
-    if (isOutOfBounds || hasCollision) {
+    if (isOutOfBounds || collision) {
       this.move(axis, -value);
-      this._shouldTurn(frameDelta);
+
+      collision && this._checkPlayerOnPath(world, collision);
+
+      if (this._shouldTurn(frameDelta)) {
+        if (this.huntingTime < PLAYER_HUNTING_TIME) {
+          this.turn(this._getRandomDirection());
+        } else if (
+          this.huntingTime > PLAYER_HUNTING_TIME &&
+          this.huntingTime < BASE_HUNTING_TIME
+        ) {
+          this.turn(this._getDirectionToHunt(world.player));
+        } else if (this.huntingTime > BASE_HUNTING_TIME) {
+          this.turn(this._getDirectionToHunt(world.base));
+        }
+      }
+    }
+
+    if (
+      this.x % CELL_SIZE === 0 &&
+      this.y % CELL_SIZE === 0 &&
+      Math.floor(Math.random() * ENEMY_TANK_RANDOM_TURN) === 1
+    ) {
+      this.turn(this._getRandomDirection());
     }
   }
 
@@ -47,12 +78,21 @@ export default class EnemyTank extends Tank {
     this.isDestroyed = true;
   }
 
-  _getRandomDirection() {
-    return Math.floor(Math.random() * 4);
+  _checkPlayerOnPath(world, collision) {
+    if (
+      collision?.objects
+        .values()
+        .some((object) => object.type === OBJECTS_TYPE.PLAYER1)
+    ) {
+      this._randomFire(world);
+      if (this.bullet) {
+        world.objects.add(this.bullet);
+      }
+    }
   }
 
   _randomFire(world) {
-    if (Math.floor(Math.random() * 100) === 1) {
+    if (Math.floor(Math.random() * ENEMY_TANK_RANDOM_FIRE) === 1) {
       this.fire();
       if (this.bullet) {
         world.objects.add(this.bullet);
@@ -64,7 +104,28 @@ export default class EnemyTank extends Tank {
     this.turnTimer += frameDelta;
     if (this.turnTimer > ENEMY_TANK_TURN_TIMER_THRESHOLD) {
       this.turnTimer = 0;
-      this.turn(this._getRandomDirection());
+      return true;
+    }
+    return false;
+  }
+
+  _getRandomDirection() {
+    return Math.floor(Math.random() * 4);
+  }
+
+  _getDirectionToHunt(huntinqObject) {
+    if (this.y < huntinqObject.y) {
+      if (Math.random() < 0.5) return Tank.Direction.DOWN;
+      else return Math.floor(Math.random() * 4);
+    } else if (this.y > huntinqObject.y) {
+      if (Math.random() < 0.5) return Tank.Direction.UP;
+      else return Math.floor(Math.random() * 4);
+    } else if (this.x < huntinqObject.x) {
+      if (Math.random() < 0.5) return Tank.Direction.RIGHT;
+      else return Math.floor(Math.random() * 4);
+    } else if (this.x > huntinqObject.x) {
+      if (Math.random() < 0.5) return Tank.Direction.LEFT;
+      else return Math.floor(Math.random() * 4);
     }
   }
 }

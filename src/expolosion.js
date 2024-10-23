@@ -12,6 +12,4 @@ export default class Explosion extends GameObject {
   get isExploding() {
     return this.animationFrame < this.sprites.length - 1;
   }
-
-  update({ world, frameDelta }) {}
 }

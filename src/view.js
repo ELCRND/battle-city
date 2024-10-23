@@ -1,8 +1,14 @@
 import {
-  CELL_SIZE,
-  NUMBER_OF_CELL,
   STAGE_SIZE,
+  NUMBER_OF_CELL,
+  CELL_SIZE,
   TILE_SIZE,
+  PANEL_ICONS_POSITION,
+  PANEL_ICONS_SPRITES,
+  PANEL_EXTRA_LIVES_POSITION,
+  PANEL_EXTRA_LIVES_SPRITES,
+  PANEL_STAGE_INFO_POSITION,
+  PANEL_STAGE_INFO_SPRITES,
 } from "./constants.js";
 
 export default class View {
@@ -20,7 +26,10 @@ export default class View {
   update(stage) {
     this.clearScreen();
     this.renderStage(stage);
-    this.renderGrid();
+    this.renderEnemyIcons(stage.enemies);
+    this.renderPayerExtraLives(stage.player);
+    this.renderStagesNum();
+    // this.renderGrid();
   }
 
   renderStage(stage) {
@@ -28,7 +37,7 @@ export default class View {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.ctx.fillStyle = "#000";
-    this.ctx.fillRect(96, 64, STAGE_SIZE, STAGE_SIZE);
+    this.ctx.fillRect(CELL_SIZE, CELL_SIZE, STAGE_SIZE, STAGE_SIZE);
 
     for (const object of stage.objects) {
       const { x, y, width, height, sprite } = object;
@@ -37,8 +46,8 @@ export default class View {
       this.ctx.drawImage(
         this.sprite.image,
         ...sprite,
-        x + 96,
-        y + 64,
+        x + CELL_SIZE,
+        y + CELL_SIZE,
         width,
         height
       );
@@ -58,8 +67,8 @@ export default class View {
         this.ctx.strokeStyle = "#fff";
         this.ctx.lineWidth = 0.2;
         this.ctx.strokeRect(
-          x * CELL_SIZE + 98,
-          y * CELL_SIZE + 66,
+          x * CELL_SIZE + CELL_SIZE,
+          y * CELL_SIZE + CELL_SIZE,
           CELL_SIZE - 2,
           CELL_SIZE - 2
         );
@@ -70,13 +79,80 @@ export default class View {
         this.ctx.strokeStyle = "#ccc";
         this.ctx.lineWidth = 0.1;
         this.ctx.strokeRect(
-          x * TILE_SIZE + 98,
-          y * TILE_SIZE + 66,
+          x * TILE_SIZE + CELL_SIZE,
+          y * TILE_SIZE + CELL_SIZE,
           TILE_SIZE - 2,
           TILE_SIZE - 2
         );
       }
     }
+  }
+
+  renderEnemyIcons(enemies) {
+    for (let i = 0, x = 0, y = 0; i < enemies.length; i++, x++) {
+      if (x === 2) (x = 0), y++;
+      this.ctx.drawImage(
+        this.sprite.image,
+        PANEL_ICONS_SPRITES[0],
+        PANEL_ICONS_SPRITES[1],
+        TILE_SIZE,
+        TILE_SIZE,
+        PANEL_ICONS_POSITION[0] + x * TILE_SIZE,
+        PANEL_ICONS_POSITION[1] + y * TILE_SIZE,
+        TILE_SIZE,
+        TILE_SIZE
+      );
+    }
+  }
+
+  renderStagesNum() {
+    this.ctx.drawImage(
+      this.sprite.image,
+      PANEL_STAGE_INFO_SPRITES[0][0],
+      PANEL_STAGE_INFO_SPRITES[0][1],
+      CELL_SIZE,
+      CELL_SIZE,
+      PANEL_STAGE_INFO_POSITION[0][0],
+      PANEL_STAGE_INFO_POSITION[0][1],
+      CELL_SIZE,
+      CELL_SIZE
+    );
+    this.ctx.drawImage(
+      this.sprite.image,
+      PANEL_STAGE_INFO_SPRITES[1][0],
+      PANEL_STAGE_INFO_SPRITES[1][1],
+      TILE_SIZE,
+      TILE_SIZE,
+      PANEL_STAGE_INFO_POSITION[1][0],
+      PANEL_STAGE_INFO_POSITION[1][1],
+      TILE_SIZE,
+      TILE_SIZE
+    );
+  }
+
+  renderPayerExtraLives(player) {
+    this.ctx.drawImage(
+      this.sprite.image,
+      PANEL_EXTRA_LIVES_SPRITES[0][0],
+      PANEL_EXTRA_LIVES_SPRITES[0][1],
+      CELL_SIZE,
+      CELL_SIZE,
+      PANEL_EXTRA_LIVES_POSITION[0][0],
+      PANEL_EXTRA_LIVES_POSITION[0][1],
+      CELL_SIZE,
+      CELL_SIZE
+    );
+    this.ctx.drawImage(
+      this.sprite.image,
+      PANEL_EXTRA_LIVES_SPRITES[1][0] + player.extraLives * TILE_SIZE,
+      PANEL_EXTRA_LIVES_SPRITES[1][1],
+      TILE_SIZE,
+      TILE_SIZE,
+      PANEL_EXTRA_LIVES_POSITION[1][0],
+      PANEL_EXTRA_LIVES_POSITION[1][1],
+      TILE_SIZE,
+      TILE_SIZE
+    );
   }
 
   clearScreen() {

@@ -1,13 +1,12 @@
 import {
+  CELL_SIZE,
+  TILE_SIZE,
   TANK_WIDTH,
   TANK_HEIGHT,
   TANK_SPEED,
   DIRECTION,
-  TILE_SIZE,
-  BULLET_SPEED,
   BULLET_WIDTH,
-  CELL_SIZE,
-  BULLET_HEIGHT,
+  BULLET_SPEED,
 } from "./constants.js";
 import { getAxisforDirection } from "./utils.js";
 import GameObject from "./game-object.js";
@@ -73,33 +72,34 @@ export default class Tank extends GameObject {
   }
 
   _getBulletStartPosition() {
+    const trashold = (CELL_SIZE - BULLET_WIDTH) / 2 + 1;
     if (this.direction === DIRECTION.UP) {
       return {
-        x: this.x + (CELL_SIZE - BULLET_WIDTH) / 2 + 1,
+        x: this.x + trashold,
         y: this.y - TILE_SIZE / 2,
       };
     }
     if (this.direction === DIRECTION.RIGHT) {
       return {
         x: this.x + CELL_SIZE,
-        y: this.y + (CELL_SIZE - BULLET_WIDTH) / 2 + 1,
+        y: this.y + trashold,
       };
     }
     if (this.direction === DIRECTION.DOWN) {
       return {
-        x: this.x + (CELL_SIZE - BULLET_WIDTH) / 2 + 1,
+        x: this.x + trashold,
         y: this.y + CELL_SIZE,
       };
     }
     if (this.direction === DIRECTION.LEFT) {
       return {
         x: this.x - TILE_SIZE / 2,
-        y: this.y + (CELL_SIZE - BULLET_WIDTH) / 2 + 1,
+        y: this.y + trashold,
       };
     }
   }
 
-  сreateExplosion() {
-    return new TankExplosion({ x: this.x, y: this.y });
+  сreateExplosion(tankType) {
+    return new TankExplosion({ x: this.x, y: this.y, tankType });
   }
 }
