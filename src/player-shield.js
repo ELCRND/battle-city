@@ -1,4 +1,8 @@
-import { OBJECTS_TYPE, PLAYER_SHIELD_SPRITES } from "./constants.js";
+import {
+  BONUS_TIME,
+  OBJECTS_TYPE,
+  PLAYER_SHIELD_SPRITES,
+} from "./constants.js";
 import GameObject from "./game-object.js";
 
 export default class PlayerShield extends GameObject {
@@ -19,7 +23,7 @@ export default class PlayerShield extends GameObject {
     this.x = this.tank.x;
     this.y = this.tank.y;
     this.timeActive += frameDelta;
-    if (this.timeActive > 5000) {
+    if (this.timeActive > BONUS_TIME) {
       this._destroy(world);
     } else {
       this._animate(frameDelta);

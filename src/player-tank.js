@@ -4,6 +4,7 @@ import {
   PLAYER1_START_POSITION_X,
   PLAYER1_START_POSITION_Y,
   PLAYER1_SPRITES,
+  PLAYER_SPEED,
 } from "./constants.js";
 import {
   getAxisforDirection,
@@ -20,11 +21,13 @@ export default class PlayerTank extends Tank {
     this.type = OBJECTS_TYPE.PLAYER1;
     this.x = PLAYER1_START_POSITION_X;
     this.y = PLAYER1_START_POSITION_Y;
+    this.speed = PLAYER_SPEED;
     this.sprites = PLAYER1_SPRITES;
     this.extraLives = extraLives;
     this.direction = Tank.Direction.UP;
     this.shield = new PlayerShield(this);
     this.timeShieldActive = 0;
+    this.tankType = 0;
   }
 
   update({ input, frameDelta, world }) {
@@ -38,11 +41,9 @@ export default class PlayerTank extends Tank {
     }
 
     if (input.has(Keys.SPACE)) {
-      this.fire();
       input.keys.delete(Keys.SPACE);
-      if (this.bullet) {
-        world.objects.add(this.bullet);
-      }
+
+      this.fire(world);
     }
 
     if (input.has(Keys.UP, Keys.RIGHT, Keys.DOWN, Keys.LEFT)) {
@@ -55,12 +56,22 @@ export default class PlayerTank extends Tank {
       this.animate(frameDelta);
 
       const isOutOfBounds = world.isOutOfBounds(this);
-      const hasCollision = world.hasCollision(this);
+      const collision = world.getCollision(this);
 
-      if (isOutOfBounds || hasCollision) {
+      if (isOutOfBounds || collision) {
         this.move(axis, -value);
       }
     }
+  }
+
+  upgrade() {
+    if (this.tankType < 3) {
+      this.tankType += 1;
+    }
+  }
+
+  activatedShield() {
+    return new PlayerShield(this);
   }
 
   hit() {

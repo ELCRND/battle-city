@@ -3,6 +3,7 @@ import {
   BULLET_WIDTH,
   BULLET_HEIGHT,
   BULLET_SPEED,
+  BULLET_SPEED_INCREASED,
   BULLET_SPRITES,
   TILE_SIZE,
   CELL_SIZE,
@@ -20,7 +21,7 @@ export default class Bullet extends GameObject {
     this.width = BULLET_WIDTH;
     this.height = BULLET_HEIGHT;
     this.direction = direction;
-    this.speed = BULLET_SPEED;
+    this.speed = this.tank.tankType ? BULLET_SPEED_INCREASED : BULLET_SPEED;
     this.sprites = BULLET_SPRITES;
     this.isDestroyed = false;
     this.target = "";
@@ -74,7 +75,7 @@ export default class Bullet extends GameObject {
 
   _destroy(world) {
     this.speed = 0;
-    this.tank.bullet = null;
+    this.tank.bullet -= 1;
     world.objects.delete(this);
 
     if (this.target !== this.type) {

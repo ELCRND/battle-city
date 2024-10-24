@@ -8,7 +8,7 @@ import {
 import GameObject from "./game-object.js";
 
 export class Points extends GameObject {
-  constructor({ tankType, ...args }) {
+  constructor({ tankType = 0, ...args }) {
     super(args);
     this.type = OBJECTS_TYPE.POINTS;
     this.width = POINTS_WIDTH;

@@ -20,13 +20,29 @@ export default class Tank extends GameObject {
     this.width = TANK_WIDTH;
     this.height = TANK_HEIGHT;
     this.speed = TANK_SPEED;
-    this.bullet = null;
-    this.bulletSpeed = BULLET_SPEED;
+    this.bullet = 0;
     this.isDestroyed = false;
+    this.tankType = 0;
   }
 
   get sprite() {
-    return this.sprites[this.direction * 2 + this.animationFrame];
+    if (this.isBonusTank) {
+      return this.sprites[
+        this.direction * 2 +
+          this.animationFrame +
+          this.bonusAnimationFrame * 8 +
+          this.tankType * 8
+      ];
+    } else
+      return this.sprites[
+        this.direction * 2 + this.animationFrame + this.tankType * 8
+      ];
+  }
+
+  get canFire() {
+    if (this.tankType >= 2) {
+      return this.bullet < 2;
+    } else return this.bullet < 1;
   }
 
   turn(direction) {
@@ -49,8 +65,8 @@ export default class Tank extends GameObject {
     this[axis] += value * this.speed;
   }
 
-  fire() {
-    if (!this.bullet) {
+  fire(world) {
+    if (this.canFire) {
       const { x, y } = this._getBulletStartPosition();
       const bullet = new Bullet({
         tank: this,
@@ -59,11 +75,20 @@ export default class Tank extends GameObject {
         direction: this.direction,
         speed: this.bulletSpeed,
       });
-      this.bullet = bullet;
+      this.bullet += 1;
+      world.objects.add(bullet);
     }
   }
 
   animate(frameDelta) {
+    if (this.isBonusTank) {
+      this.bonusFrames += frameDelta;
+      if (this.bonusFrames > 150) {
+        this.bonusAnimationFrame ^= 1;
+        this.bonusFrames = 0;
+      }
+    }
+
     this.frames += frameDelta;
     if (this.frames > 20) {
       this.animationFrame ^= 1;

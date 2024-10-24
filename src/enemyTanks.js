@@ -9,28 +9,46 @@ import {
   ENEMY_TANK_RANDOM_TURN,
   PLAYER_HUNTING_TIME,
   BASE_HUNTING_TIME,
+  BONUS_TIME,
 } from "./constants.js";
 import { getAxisforDirection, getValueForDirection } from "./utils.js";
 
 import Tank from "./tank.js";
+import Bonus from "./bonus.js";
+import TankExplosion from "./tank-explosion.js";
 
 export default class EnemyTank extends Tank {
-  constructor({ indexStartPosition, ...args }) {
+  constructor({ indexStartPosition, isBonusTank = false, ...args }) {
     super(args);
 
     this.type = OBJECTS_TYPE.ENEMY_TANK;
     this.direction = Tank.Direction.DOWN;
-    this.speed = ENEMY_TANK_SPEED;
     this.sprites = ENEMY_TANK_SPRITES;
     this.x = ENEMY_TANK_START_POSITIONS[indexStartPosition][0];
     this.y = ENEMY_TANK_START_POSITIONS[indexStartPosition][1];
     this.turnTimer = 0;
     this.huntingTime = 0;
+    this.isBonusTank = isBonusTank;
+    this.bonusFrames = 0;
+    this.bonusAnimationFrame = 0;
+    this.freezed = false;
+    this.freezedTime = 0;
   }
 
   update({ frameDelta, world }) {
     if (this.isDestroyed) {
       world.objects.add(this.сreateExplosion(this.type));
+
+      // this.isBonusTank &&
+      world.objects.add(new Bonus());
+      return;
+    }
+
+    if (this.freezed) {
+      this.freezedTime += frameDelta;
+      if (this.freezedTime > BONUS_TIME) {
+        this.unfreeze();
+      }
       return;
     }
 
@@ -74,8 +92,33 @@ export default class EnemyTank extends Tank {
     }
   }
 
+  _bonusAnimate(frameDelta) {
+    this.bonusFrames += frameDelta;
+    if (this.bonusFrames > 150) {
+      this.bonusAnimationFrame ^= 1;
+      this.bonusFrames = 0;
+    }
+  }
+
   hit() {
     this.isDestroyed = true;
+  }
+
+  destroy(world) {
+    world.objects.add(new TankExplosion({ x: this.x, y: this.y }));
+    world.objects.delete(this);
+  }
+
+  freeze() {
+    this.speed = 0;
+    this.freezedTime = 0;
+    this.freezed = true;
+  }
+
+  unfreeze() {
+    this.speed = ENEMY_TANK_SPEED;
+    this.freezedTime = 0;
+    this.freezed = false;
   }
 
   _checkPlayerOnPath(world, collision) {
@@ -85,18 +128,12 @@ export default class EnemyTank extends Tank {
         .some((object) => object.type === OBJECTS_TYPE.PLAYER1)
     ) {
       this._randomFire(world);
-      if (this.bullet) {
-        world.objects.add(this.bullet);
-      }
     }
   }
 
   _randomFire(world) {
     if (Math.floor(Math.random() * ENEMY_TANK_RANDOM_FIRE) === 1) {
-      this.fire();
-      if (this.bullet) {
-        world.objects.add(this.bullet);
-      }
+      this.fire(world);
     }
   }
 

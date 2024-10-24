@@ -6,6 +6,8 @@ import {
   ENEMY_TANK_QUANT,
   ENEMY_TANK_SPAWN_TIMEOUT,
   ENEMY_TANK_SPAWN_MARK_TIMEOUT,
+  ENEMY_BONUS_TANK_QUANT,
+  BONUS_TIME,
 } from "./constants.js";
 
 import Base from "./base.js";
@@ -53,11 +55,27 @@ export default class Stage {
     return objects;
   }
 
+  static getBonusTankIndex() {
+    function getRandomTankIndex() {
+      return Math.floor(Math.random() * 20);
+    }
+
+    const indices = new Set();
+
+    while (indices.size < ENEMY_BONUS_TANK_QUANT) {
+      indices.add(getRandomTankIndex());
+    }
+
+    return indices;
+  }
+
   static createEnemies(types) {
+    const bonusTanks = Stage.getBonusTankIndex();
     let indexStartPosition = 2;
-    return types.map((type) => {
+    return types.map((type, idx) => {
+      const isBonusTank = bonusTanks.has(idx);
       indexStartPosition = (indexStartPosition + 1) % 3;
-      return new EnemyTank({ indexStartPosition, type });
+      return new EnemyTank({ indexStartPosition, isBonusTank, type });
     });
   }
 
@@ -70,6 +88,8 @@ export default class Stage {
     this.spawnMark = null;
     this.enemyTankCount = 0;
     this.spawnEnemyTankTimer = 0;
+    this.gameFreeze = false;
+    this.bonusTime = 0;
   }
 
   get width() {
@@ -91,7 +111,7 @@ export default class Stage {
     return 0;
   }
   get haveEnemies() {
-    return this.enemies.length > 0;
+    return this.enemies.length > 0 && !this.gameFreeze;
   }
 
   update(input, frameDelta) {
@@ -100,6 +120,14 @@ export default class Stage {
       frameDelta,
       world: this,
     };
+
+    if (this.gameFreeze) {
+      this.bonusTime += frameDelta;
+      if (this.bonusTime > BONUS_TIME) {
+        this.gameFreeze = false;
+        this.bonusTime = 0;
+      }
+    }
 
     if (this.haveEnemies) {
       this._handlerAddEnemyTank(frameDelta);
@@ -147,7 +175,8 @@ export default class Stage {
         other.type === OBJECTS_TYPE.TANK_EXPLOSION ||
         other.type === OBJECTS_TYPE.POINTS ||
         other.type === OBJECTS_TYPE.PLAYER_SHIELD ||
-        other.type === OBJECTS_TYPE.SPAWN_MARKER
+        other.type === OBJECTS_TYPE.SPAWN_MARKER ||
+        other.type === OBJECTS_TYPE.BONUS
       )
         continue;
       if (other !== object && this.haveCollision(object, other)) {
@@ -167,6 +196,16 @@ export default class Stage {
       a.top < b.bottom &&
       a.bottom > b.top
     );
+  }
+
+  freezeGame() {
+    this.gameFreeze = true;
+    this.bonusTime = 0;
+    this.objects.values().forEach((object) => {
+      if (object.type === OBJECTS_TYPE.ENEMY_TANK) {
+        object.freeze();
+      }
+    });
   }
 
   _deleteObjects(object) {
