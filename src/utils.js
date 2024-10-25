@@ -1,4 +1,4 @@
-import { DIRECTION } from "./constants.js";
+import { CELL_SIZE, DIRECTION, NUMBER_OF_CELL } from "./constants.js";
 
 export function getDirectionForKeys(keys) {
   if (keys.has("ArrowUp")) return DIRECTION.UP;

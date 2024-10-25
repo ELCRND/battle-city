@@ -38,7 +38,7 @@ export default class Bonus extends GameObject {
     this.width = BONUS_WIDTH;
     this.height = BONUS_HEIGHT;
     this.sprites = BONUS_SPRITES;
-    this.bonusType = Bonus.getRandomBonusIndex();
+    this.bonusType = 1;
   }
 
   get sprite() {
@@ -51,7 +51,9 @@ export default class Bonus extends GameObject {
     this._animate(frameDelta);
 
     if (world.haveCollision(world.player, this)) {
-      world.objects.add(new Points({ x: this.x, y: this.y + 16 }));
+      world.objects.add(
+        new Points({ x: this.x, y: this.y + 16, quant: Points.QuantMap[500] })
+      );
       world.objects.delete(this);
       switch (this.bonusType) {
         case Bonus.BonusMap.PLAYER_SHIELD:
@@ -70,7 +72,7 @@ export default class Bonus extends GameObject {
           world.enemyTankCount = 0;
           world.objects.values().forEach((object) => {
             if (object.type === OBJECTS_TYPE.ENEMY_TANK) {
-              object.destroy(world);
+              object.massDestruction(world);
             }
           });
           break;
@@ -78,7 +80,7 @@ export default class Bonus extends GameObject {
           world.player.extraLives += 1;
           break;
         case Bonus.BonusMap.GUN:
-          world.player.tankType = 3;
+          world.player.lvl = 3;
           break;
       }
     }

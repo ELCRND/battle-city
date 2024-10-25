@@ -9,4 +9,14 @@ export default class SteelWall extends Wall {
     this.sprites = STEEL_WALL_SPRITES;
     this.isShield = isShield;
   }
+
+  hit(bullet) {
+    if (bullet.tank.lvl === 3) {
+      this.destroy();
+    }
+  }
+
+  destroy() {
+    this.isDestroyed = true;
+  }
 }

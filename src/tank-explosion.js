@@ -3,22 +3,20 @@ import {
   OBJECTS_TYPE,
   TANK_EXPLOSION_ANIMATION_SPEED,
   TANK_EXPLOSION_DESTROY_DELAY,
-  TANK_EXPLOSION_HEIGHT,
   TANK_EXPLOSION_SPRITES,
-  TANK_EXPLOSION_WIDTH,
 } from "./constants.js";
 import Explosion from "./expolosion.js";
 import { Points } from "./points.js";
 
 export default class TankExplosion extends Explosion {
-  constructor({ tankType, ...args }) {
+  constructor({ type, lvl, grenade, ...args }) {
     super(args);
 
     this.type = OBJECTS_TYPE.TANK_EXPLOSION;
-    this.width = TANK_EXPLOSION_WIDTH;
-    this.height = TANK_EXPLOSION_HEIGHT;
     this.sprites = TANK_EXPLOSION_SPRITES;
-    this.tankType = tankType;
+    this.explodedObject = type;
+    this.lvl = lvl;
+    this.withoutPoints = grenade;
   }
 
   update({ world, frameDelta }) {
@@ -62,9 +60,17 @@ export default class TankExplosion extends Explosion {
     if (this.frames > TANK_EXPLOSION_DESTROY_DELAY) {
       world.objects.delete(this);
 
-      if (this.tankType === OBJECTS_TYPE.ENEMY_TANK) {
+      if (
+        this.explodedObject === OBJECTS_TYPE.ENEMY_TANK &&
+        !this.withoutPoints
+      ) {
         world.objects.add(
-          new Points({ x: this.x, y: this.y + 16, tankType: 0 })
+          new Points({
+            x: this.x,
+            y: this.y + 16,
+            type: this.explodedObject,
+            quant: Points.QuantMap[(this.lvl + 1) * 100],
+          })
         );
       }
     }

@@ -8,6 +8,7 @@ export default class Wall extends GameObject {
     this.type = type;
     this.width = TILE_SIZE;
     this.height = TILE_SIZE;
+    this.isDestroyed = false;
   }
 
   get sprite() {

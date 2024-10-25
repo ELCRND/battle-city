@@ -9,6 +9,7 @@ import {
   PANEL_EXTRA_LIVES_SPRITES,
   PANEL_STAGE_INFO_POSITION,
   PANEL_STAGE_INFO_SPRITES,
+  OBJECTS_TYPE,
 } from "./constants.js";
 
 export default class View {
@@ -39,8 +40,9 @@ export default class View {
     this.ctx.fillStyle = "#000";
     this.ctx.fillRect(CELL_SIZE, CELL_SIZE, STAGE_SIZE, STAGE_SIZE);
 
+    const forest = new Set();
     for (const object of stage.objects) {
-      const { x, y, width, height, sprite } = object;
+      const { x, y, width, height, sprite, type } = object;
       if (!sprite) continue;
 
       this.ctx.drawImage(
@@ -52,6 +54,10 @@ export default class View {
         height
       );
 
+      if (type === OBJECTS_TYPE.FOREST) {
+        forest.add(object);
+      }
+
       if (object.debug) {
         this.ctx.strokeStyle = "#0f0";
         this.ctx.lineWidth = 2;
@@ -59,6 +65,21 @@ export default class View {
         object.debug = false;
       }
     }
+
+    /*!!!*/
+    (function reRenderForForest(forest) {
+      for (const object of forest) {
+        const { x, y, width, height, sprite } = object;
+        this.ctx.drawImage(
+          this.sprite.image,
+          ...sprite,
+          x + CELL_SIZE,
+          y + CELL_SIZE,
+          width,
+          height
+        );
+      }
+    }).bind(this)(forest);
   }
 
   renderGrid() {

@@ -16,6 +16,7 @@ import SteelWall from "./stell-wall.js";
 import PlayerTank from "./player-tank.js";
 import EnemyTank from "./enemyTanks.js";
 import SpawnMarker from "./spawn-marker.js";
+import ForestWall from "./forest-wall.js";
 
 export default class Stage {
   static TerrainType = {
@@ -32,6 +33,8 @@ export default class Stage {
         return new BrickWall(args);
       case Stage.TerrainType.STEEL_WALL:
         return new SteelWall(args);
+      case Stage.TerrainType.TREE:
+        return new ForestWall(args);
     }
   }
 
@@ -81,7 +84,7 @@ export default class Stage {
 
   constructor(data) {
     this.enemies = Stage.createEnemies(data.enemies);
-    this.terrains = Stage.createTerrain(data.map);
+    this.terrains = Stage.createTerrain(data.map[1]);
     this.base = new Base();
     this.player = new PlayerTank({ extraLives: PLAYER1_EXTRA_LIVES });
     this.objects = new Set([this.base, this.player, ...this.terrains]);
@@ -111,7 +114,7 @@ export default class Stage {
     return 0;
   }
   get haveEnemies() {
-    return this.enemies.length > 0 && !this.gameFreeze;
+    return this.enemies.length > 0;
   }
 
   update(input, frameDelta) {
@@ -176,7 +179,8 @@ export default class Stage {
         other.type === OBJECTS_TYPE.POINTS ||
         other.type === OBJECTS_TYPE.PLAYER_SHIELD ||
         other.type === OBJECTS_TYPE.SPAWN_MARKER ||
-        other.type === OBJECTS_TYPE.BONUS
+        other.type === OBJECTS_TYPE.BONUS ||
+        other.type === OBJECTS_TYPE.FOREST
       )
         continue;
       if (other !== object && this.haveCollision(object, other)) {
@@ -201,11 +205,6 @@ export default class Stage {
   freezeGame() {
     this.gameFreeze = true;
     this.bonusTime = 0;
-    this.objects.values().forEach((object) => {
-      if (object.type === OBJECTS_TYPE.ENEMY_TANK) {
-        object.freeze();
-      }
-    });
   }
 
   _deleteObjects(object) {
@@ -215,6 +214,7 @@ export default class Stage {
       case OBJECTS_TYPE.ENEMY_TANK:
         this.enemyTankCount -= 1;
       case OBJECTS_TYPE.BRICK_WALL:
+      case OBJECTS_TYPE.STEEL_WALL:
       case OBJECTS_TYPE.BULLET:
         this.objects.delete(object);
       case OBJECTS_TYPE.PLAYER1:

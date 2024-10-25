@@ -8,13 +8,21 @@ import {
 import GameObject from "./game-object.js";
 
 export class Points extends GameObject {
-  constructor({ tankType = 0, ...args }) {
+  static QuantMap = {
+    100: 0,
+    200: 1,
+    300: 2,
+    400: 3,
+    500: 4,
+  };
+
+  constructor({ type, quant, ...args }) {
     super(args);
     this.type = OBJECTS_TYPE.POINTS;
     this.width = POINTS_WIDTH;
     this.height = POINTS_HEIGHT;
     this.sprites = POINTS_SPRITES;
-    this.quant = tankType;
+    this.quant = quant;
   }
 
   get sprite() {
@@ -31,6 +39,7 @@ export class Points extends GameObject {
 
   _destroy(world) {
     if (this.frames > POINTS_DESTROY_DELAY) {
+      // world.player1.score += this.quant;
       world.objects.delete(this);
     }
   }

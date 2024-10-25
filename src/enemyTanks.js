@@ -15,41 +15,51 @@ import { getAxisforDirection, getValueForDirection } from "./utils.js";
 
 import Tank from "./tank.js";
 import Bonus from "./bonus.js";
-import TankExplosion from "./tank-explosion.js";
 
 export default class EnemyTank extends Tank {
   constructor({ indexStartPosition, isBonusTank = false, ...args }) {
     super(args);
 
     this.type = OBJECTS_TYPE.ENEMY_TANK;
-    this.direction = Tank.Direction.DOWN;
-    this.sprites = ENEMY_TANK_SPRITES;
     this.x = ENEMY_TANK_START_POSITIONS[indexStartPosition][0];
     this.y = ENEMY_TANK_START_POSITIONS[indexStartPosition][1];
+    this.direction = Tank.Direction.DOWN;
+    this.sprites = ENEMY_TANK_SPRITES;
+    this.isBonusTank = isBonusTank;
     this.turnTimer = 0;
     this.huntingTime = 0;
-    this.isBonusTank = isBonusTank;
-    this.bonusFrames = 0;
     this.bonusAnimationFrame = 0;
+    this.bonusFrames = 0;
     this.freezed = false;
-    this.freezedTime = 0;
+    this.grenade = false;
+  }
+
+  get randomMove() {
+    return this.huntingTime < PLAYER_HUNTING_TIME;
+  }
+
+  get playerHunt() {
+    return (
+      this.huntingTime > PLAYER_HUNTING_TIME &&
+      this.huntingTime < BASE_HUNTING_TIME
+    );
+  }
+
+  get baseHunt() {
+    return this.huntingTime > BASE_HUNTING_TIME;
   }
 
   update({ frameDelta, world }) {
     if (this.isDestroyed) {
-      world.objects.add(this.сreateExplosion(this.type));
-
-      // this.isBonusTank &&
-      world.objects.add(new Bonus());
+      this.destroy(world);
       return;
     }
 
-    if (this.freezed) {
-      this.freezedTime += frameDelta;
-      if (this.freezedTime > BONUS_TIME) {
-        this.unfreeze();
-      }
+    if (world.gameFreeze) {
+      this._freeze();
       return;
+    } else if (this.freezed) {
+      this._unfreeze();
     }
 
     this.huntingTime += frameDelta;
@@ -61,6 +71,10 @@ export default class EnemyTank extends Tank {
     this.animate(frameDelta);
     this._randomFire(world);
 
+    if (this._canRandomTurn()) {
+      this.turn(this._getRandomDirection());
+    }
+
     const isOutOfBounds = world.isOutOfBounds(this);
     const collision = world.getCollision(this);
 
@@ -70,33 +84,8 @@ export default class EnemyTank extends Tank {
       collision && this._checkPlayerOnPath(world, collision);
 
       if (this._shouldTurn(frameDelta)) {
-        if (this.huntingTime < PLAYER_HUNTING_TIME) {
-          this.turn(this._getRandomDirection());
-        } else if (
-          this.huntingTime > PLAYER_HUNTING_TIME &&
-          this.huntingTime < BASE_HUNTING_TIME
-        ) {
-          this.turn(this._getDirectionToHunt(world.player));
-        } else if (this.huntingTime > BASE_HUNTING_TIME) {
-          this.turn(this._getDirectionToHunt(world.base));
-        }
+        this._targetChoice(world);
       }
-    }
-
-    if (
-      this.x % CELL_SIZE === 0 &&
-      this.y % CELL_SIZE === 0 &&
-      Math.floor(Math.random() * ENEMY_TANK_RANDOM_TURN) === 1
-    ) {
-      this.turn(this._getRandomDirection());
-    }
-  }
-
-  _bonusAnimate(frameDelta) {
-    this.bonusFrames += frameDelta;
-    if (this.bonusFrames > 150) {
-      this.bonusAnimationFrame ^= 1;
-      this.bonusFrames = 0;
     }
   }
 
@@ -105,20 +94,53 @@ export default class EnemyTank extends Tank {
   }
 
   destroy(world) {
-    world.objects.add(new TankExplosion({ x: this.x, y: this.y }));
+    // if (this.isBonusTank) {
+    world.objects.add(new Bonus());
+    // }
+    world.objects.add(this.сreateExplosion());
     world.objects.delete(this);
   }
 
-  freeze() {
+  massDestruction(world) {
+    this.grenade = true;
+    world.objects.add(this.сreateExplosion(this.grenade));
+    world.objects.delete(this);
+    this.grenade = false;
+  }
+
+  _freeze() {
     this.speed = 0;
-    this.freezedTime = 0;
     this.freezed = true;
   }
 
-  unfreeze() {
+  _unfreeze() {
     this.speed = ENEMY_TANK_SPEED;
-    this.freezedTime = 0;
     this.freezed = false;
+  }
+
+  _targetChoice(world) {
+    if (this.randomMove) {
+      this.turn(this._getRandomDirection());
+    } else if (this.playerHunt) {
+      this.turn(this._getDirectionToHunt(world.player));
+    } else if (this.baseHunt) {
+      this.turn(this._getDirectionToHunt(world.base));
+    }
+  }
+
+  _freezeHandler(frameDelta) {
+    this.freezedTime += frameDelta;
+    if (this.freezedTime > BONUS_TIME) {
+      this.unfreeze();
+    }
+  }
+
+  _canRandomTurn() {
+    return (
+      this.x % CELL_SIZE === 0 &&
+      this.y % CELL_SIZE === 0 &&
+      Math.floor(Math.random() * ENEMY_TANK_RANDOM_TURN) === 1
+    );
   }
 
   _checkPlayerOnPath(world, collision) {
@@ -163,6 +185,14 @@ export default class EnemyTank extends Tank {
     } else if (this.x > huntinqObject.x) {
       if (Math.random() < 0.5) return Tank.Direction.LEFT;
       else return Math.floor(Math.random() * 4);
+    }
+  }
+
+  _bonusAnimate(frameDelta) {
+    this.bonusFrames += frameDelta;
+    if (this.bonusFrames > 150) {
+      this.bonusAnimationFrame ^= 1;
+      this.bonusFrames = 0;
     }
   }
 }

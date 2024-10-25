@@ -16,6 +16,7 @@ export const OBJECTS_TYPE = {
   TANK_EXPLOSION: "tank-explosion",
   BRICK_WALL: "brick-wall",
   STEEL_WALL: "steel-wall",
+  FOREST: "forest",
   POINTS: "points",
   PLAYER_SHIELD: "player-shield",
   SPAWN_MARKER: "spawn-marker",
@@ -130,11 +131,11 @@ export const BRICK_WALL_SPRITES = [
 ];
 
 export const STEEL_WALL_SPRITES = [
-  [16 * CELL_SIZE, 4.5 * CELL_SIZE, TILE_SIZE, TILE_SIZE], // full wall x,y,w,h
-  [17 * CELL_SIZE, 4.5 * CELL_SIZE, TILE_SIZE, TILE_SIZE], // right wall
-  [18 * CELL_SIZE, 4.5 * CELL_SIZE, TILE_SIZE, TILE_SIZE], // bottom wall
-  [19 * CELL_SIZE, 4.5 * CELL_SIZE, TILE_SIZE, TILE_SIZE], // left wall
-  [20 * CELL_SIZE, 4.5 * CELL_SIZE, TILE_SIZE, TILE_SIZE], // top wall
+  [16 * CELL_SIZE, 4.5 * CELL_SIZE, TILE_SIZE, TILE_SIZE],
+];
+
+export const FOREST_WALL_SPRITES = [
+  [16.5 * CELL_SIZE, 4.5 * CELL_SIZE, TILE_SIZE, TILE_SIZE],
 ];
 
 /*__________________________EXPLOSION__________________________*/

@@ -21,7 +21,7 @@ export default class Bullet extends GameObject {
     this.width = BULLET_WIDTH;
     this.height = BULLET_HEIGHT;
     this.direction = direction;
-    this.speed = this.tank.tankType ? BULLET_SPEED_INCREASED : BULLET_SPEED;
+    this.speed = this.tank.lvl ? BULLET_SPEED_INCREASED : BULLET_SPEED;
     this.sprites = BULLET_SPRITES;
     this.isDestroyed = false;
     this.target = "";

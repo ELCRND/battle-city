@@ -1,10 +1,11 @@
+import Player from "./player.js";
 import Stage from "./stage.js";
 
 export default class Game {
   constructor({ input, view, stages }) {
     this.input = input;
     this.view = view;
-    this.player1 = null;
+    this.player1 = new Player();
     this.player2 = null;
     this.stages = stages;
     this.stage = null;

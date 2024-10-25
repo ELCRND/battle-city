@@ -27,7 +27,7 @@ export default class PlayerTank extends Tank {
     this.direction = Tank.Direction.UP;
     this.shield = new PlayerShield(this);
     this.timeShieldActive = 0;
-    this.tankType = 0;
+    this.lvl = 3;
   }
 
   update({ input, frameDelta, world }) {
@@ -65,8 +65,8 @@ export default class PlayerTank extends Tank {
   }
 
   upgrade() {
-    if (this.tankType < 3) {
-      this.tankType += 1;
+    if (this.lvl < 3) {
+      this.lvl += 1;
     }
   }
 
@@ -75,9 +75,9 @@ export default class PlayerTank extends Tank {
   }
 
   hit() {
-    // if (this.extraLives >= 0 && !this.shield) {
-    //   this.isDestroyed = true;
-    //   this.extraLives -= 1;
-    // }
+    if (this.extraLives >= 0 && !this.shield) {
+      this.isDestroyed = true;
+      this.extraLives -= 1;
+    }
   }
 }

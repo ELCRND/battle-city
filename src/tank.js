@@ -6,7 +6,6 @@ import {
   TANK_SPEED,
   DIRECTION,
   BULLET_WIDTH,
-  BULLET_SPEED,
 } from "./constants.js";
 import { getAxisforDirection } from "./utils.js";
 import GameObject from "./game-object.js";
@@ -20,9 +19,9 @@ export default class Tank extends GameObject {
     this.width = TANK_WIDTH;
     this.height = TANK_HEIGHT;
     this.speed = TANK_SPEED;
-    this.bullet = 0;
     this.isDestroyed = false;
-    this.tankType = 0;
+    this.bullet = 0;
+    this.lvl = 0;
   }
 
   get sprite() {
@@ -31,16 +30,16 @@ export default class Tank extends GameObject {
         this.direction * 2 +
           this.animationFrame +
           this.bonusAnimationFrame * 8 +
-          this.tankType * 8
+          this.lvl * 8
       ];
     } else
       return this.sprites[
-        this.direction * 2 + this.animationFrame + this.tankType * 8
+        this.direction * 2 + this.animationFrame + this.lvl * 8
       ];
   }
 
   get canFire() {
-    if (this.tankType >= 2) {
+    if (this.lvl >= 2) {
       return this.bullet < 2;
     } else return this.bullet < 1;
   }
@@ -124,7 +123,7 @@ export default class Tank extends GameObject {
     }
   }
 
-  сreateExplosion(tankType) {
-    return new TankExplosion({ x: this.x, y: this.y, tankType });
+  сreateExplosion() {
+    return new TankExplosion(this);
   }
 }

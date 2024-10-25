@@ -9,7 +9,6 @@ export default class BrickWall extends Wall {
     this.sprites = BRICK_WALL_SPRITES;
     this.spriteIndex = 0;
     this.stability = `1111`; // full wall, top-left | top-right | bottom-left | bottom-right
-    this.isDestroyed = false;
   }
 
   get sprite() {
