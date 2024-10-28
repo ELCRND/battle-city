@@ -14,4 +14,10 @@ export default class Wall extends GameObject {
   get sprite() {
     return this.sprites[0];
   }
+
+  update({ world }) {
+    if (this.isDestroyed) {
+      world.objects.delete(this);
+    }
+  }
 }

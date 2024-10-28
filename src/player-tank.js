@@ -5,17 +5,21 @@ import {
   PLAYER1_START_POSITION_Y,
   PLAYER1_SPRITES,
   PLAYER_SPEED,
+  PLAYER1_EXTRA_LIVES,
 } from "./constants.js";
+
 import {
   getAxisforDirection,
   getDirectionForKeys,
   getValueForDirection,
 } from "./utils.js";
+
 import Tank from "./tank.js";
 import PlayerShield from "./player-shield.js";
+import TankExplosion from "./tank-explosion.js";
 
 export default class PlayerTank extends Tank {
-  constructor({ extraLives, ...args }) {
+  constructor(args) {
     super(args);
 
     this.type = OBJECTS_TYPE.PLAYER1;
@@ -23,17 +27,21 @@ export default class PlayerTank extends Tank {
     this.y = PLAYER1_START_POSITION_Y;
     this.speed = PLAYER_SPEED;
     this.sprites = PLAYER1_SPRITES;
-    this.extraLives = extraLives;
+    this.extraLives = PLAYER1_EXTRA_LIVES;
     this.direction = Tank.Direction.UP;
     this.shield = new PlayerShield(this);
     this.timeShieldActive = 0;
-    this.lvl = 3;
+    this.lvl = 0;
   }
 
   update({ input, frameDelta, world }) {
     if (this.isDestroyed) {
-      world.objects.add(this.сreateExplosion(this.type));
-      return;
+      this.destroy(world);
+    }
+
+    if (this.reSpawn) {
+      this._reSpawn(world);
+      this.reSpawn = false;
     }
 
     if (this.shield && !world.objects.has(this.shield)) {
@@ -71,13 +79,24 @@ export default class PlayerTank extends Tank {
   }
 
   activatedShield() {
-    return new PlayerShield(this);
+    this.shield = new PlayerShield(this);
+    return this.shield;
   }
 
   hit() {
-    if (this.extraLives >= 0 && !this.shield) {
+    if (this.extraLives <= 0 && !this.shield) {
       this.isDestroyed = true;
-      this.extraLives -= 1;
+    } else if (this.extraLives > 0 && !this.shield) {
+      this.reSpawn = true;
     }
+  }
+
+  _reSpawn(world) {
+    world.objects.add(new TankExplosion(this));
+    world.objects.add(this.activatedShield());
+    this.x = PLAYER1_START_POSITION_X;
+    this.y = PLAYER1_START_POSITION_Y;
+    this.extraLives -= 1;
+    this.lvl = 0;
   }
 }

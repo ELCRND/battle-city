@@ -9,5 +9,16 @@ export default class ForestWall extends Wall {
     this.sprites = FOREST_WALL_SPRITES;
   }
 
-  hit(bullet) {}
+  get top() {
+    return 0;
+  }
+  get right() {
+    return 0;
+  }
+  get bottom() {
+    return 0;
+  }
+  get left() {
+    return 0;
+  }
 }

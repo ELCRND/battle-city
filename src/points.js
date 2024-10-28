@@ -25,6 +25,19 @@ export class Points extends GameObject {
     this.quant = quant;
   }
 
+  get top() {
+    return 0;
+  }
+  get right() {
+    return 0;
+  }
+  get bottom() {
+    return 0;
+  }
+  get left() {
+    return 0;
+  }
+
   get sprite() {
     return this.sprites[this.quant];
   }
@@ -39,7 +52,7 @@ export class Points extends GameObject {
 
   _destroy(world) {
     if (this.frames > POINTS_DESTROY_DELAY) {
-      // world.player1.score += this.quant;
+      world.player.score += (this.quant + 1) * 100;
       world.objects.delete(this);
     }
   }

@@ -3,14 +3,18 @@ import {
   TILE_SIZE,
   TANK_WIDTH,
   TANK_HEIGHT,
-  TANK_SPEED,
   DIRECTION,
   BULLET_WIDTH,
+  OBJECTS_TYPE,
 } from "./constants.js";
+
 import { getAxisforDirection } from "./utils.js";
+
 import GameObject from "./game-object.js";
 import Bullet from "./bullet.js";
 import TankExplosion from "./tank-explosion.js";
+import Bonus from "./bonus.js";
+import GameOver from "./game-over.js";
 
 export default class Tank extends GameObject {
   constructor(args) {
@@ -18,24 +22,26 @@ export default class Tank extends GameObject {
 
     this.width = TANK_WIDTH;
     this.height = TANK_HEIGHT;
-    this.speed = TANK_SPEED;
     this.isDestroyed = false;
     this.bullet = 0;
     this.lvl = 0;
   }
 
-  get sprite() {
+  get spriteIndex() {
     if (this.isBonusTank) {
-      return this.sprites[
+      return (
         this.direction * 2 +
-          this.animationFrame +
-          this.bonusAnimationFrame * 8 +
-          this.lvl * 8
-      ];
-    } else
-      return this.sprites[
-        this.direction * 2 + this.animationFrame + this.lvl * 8
-      ];
+        this.animationFrame +
+        this.lvl * 8 +
+        this.bonusAnimationFrame * 32
+      );
+    } else {
+      return this.direction * 2 + this.animationFrame + this.lvl * 8;
+    }
+  }
+
+  get sprite() {
+    return this.sprites[this.spriteIndex];
   }
 
   get canFire() {
@@ -77,6 +83,24 @@ export default class Tank extends GameObject {
       this.bullet += 1;
       world.objects.add(bullet);
     }
+  }
+
+  сreateExplosion() {
+    return new TankExplosion(this);
+  }
+
+  destroy(world) {
+    if (this.type === OBJECTS_TYPE.ENEMY_TANK) {
+      if (this.isBonusTank) {
+        world.objects.add(new Bonus());
+      }
+      world.enemyTankCount -= 1;
+    } else if (this.type === OBJECTS_TYPE.PLAYER1) {
+      world.gameOver = new GameOver();
+    }
+
+    world.objects.add(this.сreateExplosion());
+    world.objects.delete(this);
   }
 
   animate(frameDelta) {
@@ -121,9 +145,5 @@ export default class Tank extends GameObject {
         y: this.y + trashold,
       };
     }
-  }
-
-  сreateExplosion() {
-    return new TankExplosion(this);
   }
 }

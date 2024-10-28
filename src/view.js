@@ -30,7 +30,9 @@ export default class View {
     this.renderEnemyIcons(stage.enemies);
     this.renderPayerExtraLives(stage.player);
     this.renderStagesNum();
+    this.renderScore(stage.player.score);
     // this.renderGrid();
+    if (stage.gameOver) this.renderGemeOver(stage.gameOver);
   }
 
   renderStage(stage) {
@@ -80,6 +82,23 @@ export default class View {
         );
       }
     }).bind(this)(forest);
+  }
+
+  renderScore(score) {
+    this.ctx.font = "48px serif";
+    this.ctx.fillStyle = "red";
+    this.ctx.fillText(score, 80, 40);
+  }
+
+  renderGemeOver(object) {
+    this.ctx.drawImage(
+      this.sprite.image,
+      ...object.sprite,
+      object.x + CELL_SIZE,
+      object.y + CELL_SIZE,
+      object.width,
+      object.height
+    );
   }
 
   renderGrid() {

@@ -32,22 +32,21 @@ export default class Bullet extends GameObject {
   }
 
   update({ world }) {
+    if (this.isDestroyed) {
+      this._destroy(world);
+    }
+
     this._move();
 
     const isOutOfBounds = world.isOutOfBounds(this);
     const collision = world.getCollision(this);
 
-    if (
-      isOutOfBounds ||
-      (collision && this._shouldIsDestroyed(collision.objects))
-    ) {
-      this._destroy(world);
+    if (isOutOfBounds || collision) {
+      if (collision && this._shouldDestroyed(collision.objects)) {
+        this._destroy(world);
+      }
+      this.isDestroyed = true;
     }
-  }
-
-  hit() {
-    this.tank.bullet = null;
-    this.isDestroyed = true;
   }
 
   _move() {
@@ -58,13 +57,13 @@ export default class Bullet extends GameObject {
     this[axis] += delta;
   }
 
-  _shouldIsDestroyed(objects) {
+  _shouldDestroyed(objects) {
     let flag = false; // need to destroy two walls together
 
     for (const object of objects) {
       this.target = object.type;
 
-      if (this.target !== this.tank.type) {
+      if (this.target !== this.tank.type && this.target !== this.type) {
         object.hit(this);
         flag = true;
       }
@@ -76,11 +75,12 @@ export default class Bullet extends GameObject {
   _destroy(world) {
     this.speed = 0;
     this.tank.bullet -= 1;
-    world.objects.delete(this);
 
     if (this.target !== this.type) {
       world.objects.add(this._createExplosion());
     }
+
+    world.objects.delete(this);
   }
 
   _createExplosion() {

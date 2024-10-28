@@ -1,4 +1,8 @@
+import PlayerTank from "./player-tank.js";
+
 export default class Player {
-  score = 0;
-  lives = 2;
+  constructor() {
+    this.score = 0;
+    this.tank = new PlayerTank();
+  }
 }

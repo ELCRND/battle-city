@@ -13,6 +13,19 @@ export default class SpawnMarker extends GameObject {
     this.sprites = ENEMY_TANK_SPAWN_SPRITES;
   }
 
+  get top() {
+    return 0;
+  }
+  get right() {
+    return 0;
+  }
+  get bottom() {
+    return 0;
+  }
+  get left() {
+    return 0;
+  }
+
   get sprite() {
     return this.sprites[this.animationFrame];
   }

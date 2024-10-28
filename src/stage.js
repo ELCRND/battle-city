@@ -2,7 +2,6 @@ import {
   STAGE_SIZE,
   TILE_SIZE,
   OBJECTS_TYPE,
-  PLAYER1_EXTRA_LIVES,
   ENEMY_TANK_QUANT,
   ENEMY_TANK_SPAWN_TIMEOUT,
   ENEMY_TANK_SPAWN_MARK_TIMEOUT,
@@ -13,10 +12,11 @@ import {
 import Base from "./base.js";
 import BrickWall from "./brick-wall.js";
 import SteelWall from "./stell-wall.js";
-import PlayerTank from "./player-tank.js";
 import EnemyTank from "./enemyTanks.js";
 import SpawnMarker from "./spawn-marker.js";
 import ForestWall from "./forest-wall.js";
+import WaterWall from "./water-wall.js";
+import Player from "./player.js";
 
 export default class Stage {
   static TerrainType = {
@@ -35,6 +35,8 @@ export default class Stage {
         return new SteelWall(args);
       case Stage.TerrainType.TREE:
         return new ForestWall(args);
+      case Stage.TerrainType.WATER:
+        return new WaterWall(args);
     }
   }
 
@@ -78,21 +80,22 @@ export default class Stage {
     return types.map((type, idx) => {
       const isBonusTank = bonusTanks.has(idx);
       indexStartPosition = (indexStartPosition + 1) % 3;
-      return new EnemyTank({ indexStartPosition, isBonusTank, type });
+      return new EnemyTank({ indexStartPosition, isBonusTank, tankType: type });
     });
   }
 
   constructor(data) {
-    this.enemies = Stage.createEnemies(data.enemies);
-    this.terrains = Stage.createTerrain(data.map[1]);
+    this.enemies = Stage.createEnemies(data.enemies[0]);
+    this.terrains = Stage.createTerrain(data.map[4]);
     this.base = new Base();
-    this.player = new PlayerTank({ extraLives: PLAYER1_EXTRA_LIVES });
-    this.objects = new Set([this.base, this.player, ...this.terrains]);
+    this.player = new Player();
+    this.objects = new Set([this.base, this.player.tank, ...this.terrains]);
     this.spawnMark = null;
     this.enemyTankCount = 0;
     this.spawnEnemyTankTimer = 0;
     this.gameFreeze = false;
     this.bonusTime = 0;
+    this.gameOver = null;
   }
 
   get width() {
@@ -124,12 +127,13 @@ export default class Stage {
       world: this,
     };
 
+    if (this.gameOver) {
+      this.gameOver.update(state);
+      return;
+    }
+
     if (this.gameFreeze) {
-      this.bonusTime += frameDelta;
-      if (this.bonusTime > BONUS_TIME) {
-        this.gameFreeze = false;
-        this.bonusTime = 0;
-      }
+      this._handlerGameFreeze(frameDelta);
     }
 
     if (this.haveEnemies) {
@@ -137,9 +141,6 @@ export default class Stage {
     }
 
     this.objects.forEach((object) => {
-      if (object.isDestroyed) {
-        this._deleteObjects(object);
-      }
       if (typeof object === "object") {
         object.update(state);
       }
@@ -157,13 +158,11 @@ export default class Stage {
 
   hasCollision(object) {
     const collision = this.getCollision(object);
-
     return Boolean(collision);
   }
 
   getCollision(object) {
     const collisionObjects = this.getCollisionObjects(object);
-
     if (collisionObjects.size > 0) {
       return { objects: collisionObjects };
     }
@@ -174,15 +173,11 @@ export default class Stage {
 
     for (const other of this.objects) {
       if (
-        other.type === OBJECTS_TYPE.BULLET_EXPLOSION ||
-        other.type === OBJECTS_TYPE.TANK_EXPLOSION ||
-        other.type === OBJECTS_TYPE.POINTS ||
-        other.type === OBJECTS_TYPE.PLAYER_SHIELD ||
-        other.type === OBJECTS_TYPE.SPAWN_MARKER ||
         other.type === OBJECTS_TYPE.BONUS ||
-        other.type === OBJECTS_TYPE.FOREST
+        (object.type === OBJECTS_TYPE.BULLET && other.type === OBJECTS_TYPE.WATER)
       )
         continue;
+
       if (other !== object && this.haveCollision(object, other)) {
         // other.debug = true;
         objects.add(other);
@@ -194,12 +189,7 @@ export default class Stage {
 
   haveCollision(a, b) {
     if (!a || !b) return;
-    return (
-      a.left < b.right &&
-      a.right > b.left &&
-      a.top < b.bottom &&
-      a.bottom > b.top
-    );
+    return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
   }
 
   freezeGame() {
@@ -207,25 +197,11 @@ export default class Stage {
     this.bonusTime = 0;
   }
 
-  _deleteObjects(object) {
-    switch (object.type) {
-      case OBJECTS_TYPE.BASE:
-        break;
-      case OBJECTS_TYPE.ENEMY_TANK:
-        this.enemyTankCount -= 1;
-      case OBJECTS_TYPE.BRICK_WALL:
-      case OBJECTS_TYPE.STEEL_WALL:
-      case OBJECTS_TYPE.BULLET:
-        this.objects.delete(object);
-      case OBJECTS_TYPE.PLAYER1:
-        if (object.extraLives >= 0) {
-          const newLife = new PlayerTank({ extraLives: object.extraLives });
-          this.objects.delete(object);
-          this.player = newLife;
-          this.objects.add(this.player);
-        } else {
-          this.objects.delete(object);
-        }
+  _handlerGameFreeze(frameDelta) {
+    this.bonusTime += frameDelta;
+    if (this.bonusTime > BONUS_TIME) {
+      this.gameFreeze = false;
+      this.bonusTime = 0;
     }
   }
 
@@ -234,10 +210,7 @@ export default class Stage {
       this.spawnEnemyTankTimer += frameDelta;
     }
 
-    if (
-      !this.spawnMark &&
-      this.spawnEnemyTankTimer > ENEMY_TANK_SPAWN_MARK_TIMEOUT
-    ) {
+    if (!this.spawnMark && this.spawnEnemyTankTimer > ENEMY_TANK_SPAWN_MARK_TIMEOUT) {
       this._addSpawnMark();
     } else if (this.spawnEnemyTankTimer > ENEMY_TANK_SPAWN_TIMEOUT) {
       this.objects.delete(this.spawnMark);

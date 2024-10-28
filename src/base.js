@@ -1,3 +1,4 @@
+import BaseExplosion from "./base-explosion.js";
 import {
   BASE_X,
   BASE_Y,
@@ -9,7 +10,6 @@ import {
 } from "./constants.js";
 import GameObject from "./game-object.js";
 import SteelWall from "./stell-wall.js";
-import TankExplosion from "./tank-explosion.js";
 
 export default class Base extends GameObject {
   constructor(args) {
@@ -21,13 +21,13 @@ export default class Base extends GameObject {
     this.width = BASE_WIDTH;
     this.height = BASE_HEIGHT;
     this.sprites = BASE_SPTITES;
-    this.gameOver = false;
+    this.isDestroyed = false;
     this.isExploded = false;
     this.shieldActive = false;
   }
 
   get sprite() {
-    return this.sprites[Number(this.gameOver)];
+    return this.sprites[Number(this.isDestroyed)];
   }
 
   update({ world, frameDelta }) {
@@ -39,9 +39,9 @@ export default class Base extends GameObject {
       }
     }
 
-    if (this.isExploded && !this.gameOver) {
+    if (this.isExploded && !this.isDestroyed) {
       world.objects.add(this.сreateExplosion(world));
-      this.gameOver = true;
+      this.isDestroyed = true;
     }
   }
 
@@ -85,6 +85,6 @@ export default class Base extends GameObject {
   }
 
   сreateExplosion() {
-    return new TankExplosion({ x: this.x, y: this.y });
+    return new BaseExplosion(this);
   }
 }

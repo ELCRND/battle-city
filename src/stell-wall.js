@@ -11,7 +11,7 @@ export default class SteelWall extends Wall {
   }
 
   hit(bullet) {
-    if (bullet.tank.lvl === 3) {
+    if (bullet.tank.lvl === 3 && bullet.tank.type === OBJECTS_TYPE.PLAYER1) {
       this.destroy();
     }
   }
