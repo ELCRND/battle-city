@@ -13,22 +13,29 @@ import {
 } from "./constants.js";
 
 export default class View {
-  constructor(canvas, sprite) {
+  constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.ctx.imageSmoothingEnabled = true;
-    this.sprite = sprite;
+    this.sprite = null;
   }
 
-  async init() {
-    await this.sprite.load();
+  init() {
+    this.canvas.width = 1024;
+    this.canvas.height = 960;
+  }
+
+  off() {
+    this.clearScreen();
+    this.canvas.width = 0;
+    this.canvas.height = 0;
   }
 
   update(stage) {
     this.clearScreen();
     this.renderStage(stage);
     this.renderEnemyIcons(stage.enemies);
-    this.renderPayerExtraLives(stage.player);
+    this.renderPayerExtraLives(stage.player.tank);
     this.renderStagesNum();
     this.renderScore(stage.player.score);
     // this.renderGrid();
@@ -85,9 +92,9 @@ export default class View {
   }
 
   renderScore(score) {
-    this.ctx.font = "48px serif";
-    this.ctx.fillStyle = "red";
-    this.ctx.fillText(score, 80, 40);
+    this.ctx.font = "36px PressStart2P";
+    this.ctx.fillStyle = "#de2800";
+    this.ctx.fillText(score, 80, 50);
   }
 
   renderGemeOver(object) {

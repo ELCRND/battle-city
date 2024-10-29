@@ -1,3 +1,9 @@
+@font-face {
+  font-family: "PressStart2P";
+  /* src: url(assets/fonts/font-7x7.ttf); */
+  src: url(assets/fonts/PressStart2P-Regular.ttf);
+}
+
 * {
   margin: 0;
   box-sizing: border-box;
@@ -8,4 +14,17 @@ body {
   display: flex;
   justify-content: center;
   background-color: #000;
+  font-family: "PressStart2P", sans-serif;
+}
+
+#menu {
+  display: grid;
+  place-content: center;
+  gap: 32px;
+}
+
+:is(#single-player, #multy-player, #editor) > span {
+  margin-left: 50px;
+  font-size: 58px;
+  color: #fff;
 }

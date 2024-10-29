@@ -85,8 +85,8 @@ export default class Stage {
   }
 
   constructor(data) {
-    this.enemies = Stage.createEnemies(data.enemies[0]);
-    this.terrains = Stage.createTerrain(data.map[4]);
+    this.enemies = Stage.createEnemies(data.enemies);
+    this.terrains = Stage.createTerrain(data.map);
     this.base = new Base();
     this.player = new Player();
     this.objects = new Set([this.base, this.player.tank, ...this.terrains]);
@@ -96,6 +96,7 @@ export default class Stage {
     this.gameFreeze = false;
     this.bonusTime = 0;
     this.gameOver = null;
+    this.gameOverFrames = 0;
   }
 
   get width() {
@@ -129,6 +130,7 @@ export default class Stage {
 
     if (this.gameOver) {
       this.gameOver.update(state);
+      this.gameOverFrames += frameDelta;
       return;
     }
 

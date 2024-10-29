@@ -14,6 +14,7 @@ export default class Input {
         case "ArrowLeft":
         case "Space":
         case "Escape":
+        case "Enter":
         default:
           e.preventDefault();
           this.keys.add(e.code);
@@ -28,6 +29,7 @@ export default class Input {
         case "ArrowLeft":
         case "Space":
         case "Escape":
+        case "Enter":
         default:
           e.preventDefault();
           this.keys.delete(e.code);

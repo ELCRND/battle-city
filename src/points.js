@@ -52,7 +52,14 @@ export class Points extends GameObject {
 
   _destroy(world) {
     if (this.frames > POINTS_DESTROY_DELAY) {
-      world.player.score += (this.quant + 1) * 100;
+      const score = (this.quant + 1) * 100;
+      world.player.score += score;
+      if (
+        !localStorage.getItem("score") ||
+        localStorage.getItem("score") < world.player.score
+      ) {
+        localStorage.setItem("score", world.player.score);
+      }
       world.objects.delete(this);
     }
   }
