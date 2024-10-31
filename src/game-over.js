@@ -1,9 +1,5 @@
-import {
-  GAME_OVER_HEIGHT,
-  GAME_OVER_SPRITES,
-  GAME_OVER_WIDTH,
-  STAGE_SIZE,
-} from "./constants.js";
+/*!!!*/
+import { GAME_OVER_SPRITES, STAGE_SIZE } from "./constants.js";
 import GameObject from "./game-object.js";
 
 export default class GameOver extends GameObject {

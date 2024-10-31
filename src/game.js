@@ -1,5 +1,8 @@
+/*!!!*/
+import Menu from "./menu.js";
 import Stage from "./stage.js";
 import Statistics from "./statistics.js";
+import View from "./view.js";
 
 export default class Game {
   constructor({ input, view, menu, stages, sprite }) {
@@ -10,13 +13,10 @@ export default class Game {
     this.stages = stages;
     this.sprite = sprite;
     this.stage = null;
-    this.stageIndex = 1;
+    this.stageIndex = 0;
     this.frames = 0;
     this.lastFrame = 0;
-  }
-
-  get startGame() {
-    return !this.menu;
+    this.restart = false;
   }
 
   async init() {
@@ -32,10 +32,33 @@ export default class Game {
   }
 
   _loop = (currentFrame) => {
-    if (this.stage?.gameOver && this.stage?.gameOverFrames > 300) {
+    if (!this.stage && this.statistics && this.input.has("Enter")) {
+      this.input.keys.delete("Enter");
+      this.statistics.off();
+      this.statistics = null;
+
+      if (this.restart || this.stageIndex >= this.stages.length - 1) {
+        this.stageIndex = 0;
+        this.menu = new Menu();
+        this.menu.sprite = this.sprite;
+        this.menu.init();
+        this.view = new View(this.sprite);
+        this.stage = new Stage(this.stages[this.stageIndex]);
+      } else {
+        this.stageIndex += 1;
+        this.stage = new Stage(this.stages[this.stageIndex]);
+        this.view = new View(this.sprite);
+        this.view.init();
+      }
+    }
+
+    if (this.stage?.gameOverComplete || this.stage?.stageCompleteFrames > 3000) {
+      if (this.stage?.gameOverComplete) this.restart = true;
+
       this.statistics = new Statistics({
         stage: this.stage,
         stageIndex: this.stageIndex,
+        sprite: this.sprite,
       });
       this.statistics.init();
       this.view.off();
@@ -58,7 +81,7 @@ export default class Game {
       this.view?.update(this.stage);
     }
 
-    this.statistics?.update();
+    this.statistics?.update(frameDelta);
 
     this.frames = 0;
     this.lastFrame = currentFrame;

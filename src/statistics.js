@@ -1,12 +1,24 @@
+/*!!!*/
 const node = document.querySelector("#statistics");
 
 export default class Statistics {
-  constructor({ stage, stageIndex }) {
+  static *counterGenerator(a) {
+    let b = 0;
+    while (b < a) yield ++b;
+  }
+
+  constructor({ stage, stageIndex, sprite }) {
     this.stage = stage;
     this.stageIndex = stageIndex;
+    this.sprite = sprite;
     this.node = node;
     this.canvas = null;
     this.ctx = null;
+    this.frames = 0;
+    this.tankType = 0;
+    this.counter = Statistics.counterGenerator(
+      this.stage.player.enemiesStatistics[this.tankType]
+    );
   }
 
   init() {
@@ -17,12 +29,29 @@ export default class Statistics {
     this.node.appendChild(this.canvas);
   }
 
-  update() {
+  off() {
+    this.clearScreen();
+    this.canvas.width = 0;
+    this.canvas.height = 0;
+  }
+
+  update(frameDelta) {
     this._renderRecord();
     this._renderStageCount(this.stageIndex);
     this._renderPlayer();
     this._renderScore(this.stage.player.score);
-    // this._renderScoreByTank(3);
+    this.frames += frameDelta;
+    if (this.frames > 300) {
+      const count = this.counter.next();
+      if (count.done) {
+        this.tankType += 1;
+        this.counter = Statistics.counterGenerator(
+          this.stage.player.enemiesStatistics[this.tankType]
+        );
+      }
+      !count.done && this._renderScoreByTank(count.value, this.tankType);
+      this.frames = 0;
+    }
   }
 
   _renderRecord() {
@@ -53,7 +82,27 @@ export default class Statistics {
 
   _renderScoreByTank(count, tankType) {
     this.ctx.font = "36px PressStart2P";
-    this.ctx.fillStyle = "#de2800";
-    this.ctx.fillText(`${count} pt.`, 80, 450);
+    this.ctx.fillStyle = "#fff";
+
+    this.ctx.clearRect(0, 400 + 100 * tankType, this.canvas.width, 150);
+    this.ctx.fillText(`${count * (100 * (tankType + 1))}`, 0, 450 + 100 * tankType);
+    this.ctx.fillText(`pt.`, 200, 450 + 100 * tankType);
+    this.ctx.fillText(`${count}`, 400, 450 + 100 * tankType);
+
+    this.ctx.drawImage(
+      this.sprite.image,
+      8 * 64,
+      (4 + tankType) * 64,
+      64,
+      64,
+      500,
+      396 + 100 * tankType,
+      64,
+      64
+    );
+  }
+
+  clearScreen() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 }

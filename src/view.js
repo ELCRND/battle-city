@@ -13,11 +13,11 @@ import {
 } from "./constants.js";
 
 export default class View {
-  constructor(canvas) {
-    this.canvas = canvas;
+  constructor(sprite) {
+    this.canvas = document.querySelector("#canvas");
     this.ctx = canvas.getContext("2d");
     this.ctx.imageSmoothingEnabled = true;
-    this.sprite = null;
+    this.sprite = sprite;
   }
 
   init() {

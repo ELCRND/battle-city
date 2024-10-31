@@ -1,6 +1,7 @@
+/*!!!*/
 export default class Menu {
   constructor(node) {
-    this.node = node;
+    this.node = document.querySelector("#menu");
     this.canvas = null;
     this.ctx = null;
     this.sprite = null;

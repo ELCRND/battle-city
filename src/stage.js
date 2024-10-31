@@ -97,6 +97,7 @@ export default class Stage {
     this.bonusTime = 0;
     this.gameOver = null;
     this.gameOverFrames = 0;
+    this.stageCompleteFrames = 0;
   }
 
   get width() {
@@ -120,6 +121,14 @@ export default class Stage {
   get haveEnemies() {
     return this.enemies.length > 0;
   }
+  /*!!!*/
+  get gameOverComplete() {
+    return this.gameOver && this.gameOverFrames > 3000;
+  }
+  /*!!!*/
+  get stageComplete() {
+    return !this.haveEnemies && this.enemyTankCount === 0;
+  }
 
   update(input, frameDelta) {
     const state = {
@@ -130,8 +139,14 @@ export default class Stage {
 
     if (this.gameOver) {
       this.gameOver.update(state);
+      /*!!!*/
       this.gameOverFrames += frameDelta;
       return;
+    }
+
+    /*!!!*/
+    if (this.stageComplete) {
+      this.stageCompleteFrames += frameDelta;
     }
 
     if (this.gameFreeze) {

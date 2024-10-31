@@ -54,6 +54,7 @@ export class Points extends GameObject {
     if (this.frames > POINTS_DESTROY_DELAY) {
       const score = (this.quant + 1) * 100;
       world.player.score += score;
+      world.player.enemiesStatistics[this.quant] += 1;
       if (
         !localStorage.getItem("score") ||
         localStorage.getItem("score") < world.player.score
